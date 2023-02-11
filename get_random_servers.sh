@@ -17,6 +17,7 @@ MAX_SERVERS=15
 # Check for max server number passed as arg $1
 [ -n "$1" ] && MAX_SERVERS="$1"
 
+# Check for server list, generate one if missing
 if [ -f "$IP_FILE" ]; then
   echo "Found ipv4 ntp server list, continuing with existing file: 
 $IP_FILE"
@@ -31,22 +32,23 @@ else
   exit 1
 fi
 
+# Prep temp and output file
+rm -f "$OUTPUT_FILE"
 TEMP_FILE=$(mktemp /tmp/randntp.XXXXXX || exit 1)
+# Remove all comments, commented lines, and remove ipv6
+sed 's/\#.*//' "$IP_FILE" | sed '/^$/d' | sed /::/d > "$TEMP_FILE"
+TOTAL_NUM_SERVERS=$(wc -l < "$TEMP_FILE")
 # Select a subset of servers
-TOTAL_NUM_SERVERS=$(wc -l < "$IP_FILE")
 if [[ "$MAX_SERVERS" -gt "$TOTAL_NUM_SERVERS" ]]; then 
   MAX_SERVERS="$TOTAL_NUM_SERVERS"
 fi
 for i in $(seq 1 "$MAX_SERVERS"); do 
   LINE=$((RANDOM % TOTAL_NUM_SERVERS + 1))
-  head -n "$LINE" < "$IP_FILE" | tail -n 1 >> "$TEMP_FILE"
+  head -n "$LINE" < "$TEMP_FILE" | tail -n 1 >> "$OUTPUT_FILE"
 done
-# Strip any comments (#) or empty lines
-sed -i 's/\#.*//' "$TEMP_FILE"
-sed -i '/^$/d' "$TEMP_FILE"
 # Sort and remove duplicates
-sort -n "$TEMP_FILE" | uniq > "$OUTPUT_FILE"
-rm -f "$TEMP_FILE"
+sort -n "$OUTPUT_FILE" | uniq > "$TEMP_FILE"
+mv "$TEMP_FILE" "$OUTPUT_FILE"
 # Notify of completion
 echo "
 --------------------------------------------------------------------------------
