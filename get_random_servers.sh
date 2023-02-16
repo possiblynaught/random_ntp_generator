@@ -38,10 +38,13 @@ TEMP_FILE=$(mktemp /tmp/randntp.XXXXXX || exit 1)
 # Remove all comments, commented lines, and remove ipv6
 sed 's/\#.*//' "$IP_FILE" | sed '/^$/d' | sed /::/d > "$TEMP_FILE"
 TOTAL_NUM_SERVERS=$(wc -l < "$TEMP_FILE")
-# Select a subset of servers
+# Test for overflow
 if [[ "$MAX_SERVERS" -gt "$TOTAL_NUM_SERVERS" ]]; then 
   MAX_SERVERS="$TOTAL_NUM_SERVERS"
 fi
+# Seed random with PID * timestamp
+RANDOM=$(($$ * $(date +%s)))
+# Select a subset of servers
 for i in $(seq 1 "$MAX_SERVERS"); do 
   LINE=$((RANDOM % TOTAL_NUM_SERVERS + 1))
   head -n "$LINE" < "$TEMP_FILE" | tail -n 1 >> "$OUTPUT_FILE"
