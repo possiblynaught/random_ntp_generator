@@ -23,7 +23,7 @@ else
 fi
 
 # Check for server list, generate one if missing
-if [ -f "$IP_FILE" ] && [ 0 -lt "$(wc -l < "$IP_FILE" || true)" ]; then
+if [ -s "$IP_FILE" ]; then
   echo "Found ipv4 ntp server list, continuing with existing file: 
 $IP_FILE"
 elif [ -x "$GEN_SCR" ]; then

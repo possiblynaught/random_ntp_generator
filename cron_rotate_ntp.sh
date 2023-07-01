@@ -17,7 +17,7 @@ GET_SCR="$SCRIPT_DIR/get_random_servers.sh"
 . "$GET_SCR" 5
 
 # Make sure output file isn't empty
-if [ ! -f "$OUTPUT_FILE" ] || [ 0 -eq "$(wc -l < "$OUTPUT_FILE" || true)" ]; then
+if [ ! -s "$OUTPUT_FILE" ]; then
   echo "Error, output file not found: $OUTPUT_FILE
 Error when running get script: $GET_SCR"
   exit
@@ -53,6 +53,7 @@ elif command -v opkg &> /dev/null; then
     uci add_list system.ntp.server="$LINE"
   done < "$OUTPUT_FILE"
   uci commit system
+  rm "$OUTPUT_FILE"
 # Else, warn
 else
   echo "Error, timedatectl not found and no OpenWRT device detected, exiting."
