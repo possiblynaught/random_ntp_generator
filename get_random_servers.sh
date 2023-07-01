@@ -9,26 +9,31 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 ################################################################################
 IP_FILE="$SCRIPT_DIR/all_ntp_servers.txt"
-GENERATE_SCRIPT="$SCRIPT_DIR/update_ntp_server_list.sh"
+GEN_SCR="$SCRIPT_DIR/update_ntp_server_list.sh"
 OUTPUT_FILE="/tmp/random_ntp_servers.txt"
-MAX_SERVERS=15
 ################################################################################
 
 # Check for max server number passed as arg $1
-[ -n "$1" ] && MAX_SERVERS="$1"
+if [ -n "$1" ]; then 
+  MAX_SERVERS="$1"
+else
+  # Seed random with PID * timestamp
+  RANDOM=$(($$ * $(date +%s)))
+  MAX_SERVERS="$((RANDOM % 5 + 3))"
+fi
 
 # Check for server list, generate one if missing
-if [ -f "$IP_FILE" ]; then
+if [ -f "$IP_FILE" ] && [ 0 -lt "$(wc -l < "$IP_FILE" || true)" ]; then
   echo "Found ipv4 ntp server list, continuing with existing file: 
 $IP_FILE"
-elif [ -x "$GENERATE_SCRIPT" ]; then
+elif [ -x "$GEN_SCR" ]; then
   echo "No existing ipv4 ntp server list found, generating one now:"
-  "${GENERATE_SCRIPT}"
+  . "$GEN_SCR"
   [ -f "$IP_FILE" ] || (echo "Error, generating server file failed"; exit 1)
 else
-  echo "Error, executable generate script missing: $GENERATE_SCRIPT
+  echo "Error, executable generate script missing: $GEN_SCR
   make sure script is present and executable with:
-  chmod +x $GENERATE_SCRIPT"
+  chmod +x $GEN_SCR"
   exit 1
 fi
 

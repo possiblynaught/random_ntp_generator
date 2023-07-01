@@ -22,7 +22,7 @@ get_web() {
   elif [ -f "$FILE" ]; then
     rm "$FILE"
   fi
-  wget -q "$LINK" -O "$FILE"
+  wget -q "$LINK" -O "$FILE" || (echo "Error, unable to retrieve servers"; exit)
 }
 
 # Function to pull current NIST.gov servers and append to a file (arg $1)
