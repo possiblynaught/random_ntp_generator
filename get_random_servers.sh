@@ -52,7 +52,7 @@ if [[ "$MAX_SERVERS" -gt "$TOTAL_NUM_SERVERS" ]]; then
 fi
 # Select a subset of servers
 for i in $(seq 1 "$MAX_SERVERS"); do 
-  LINE==$(tr -cd '1-9' < /proc/sys/kernel/random/uuid | head -c 1)
+  LINE=$(tr -cd '1-9' < /proc/sys/kernel/random/uuid | head -c 1)
   head -n "$LINE" < "$TEMP_FILE" | tail -n 1 >> "$OUTPUT_FILE"
 done
 # Sort and remove duplicates

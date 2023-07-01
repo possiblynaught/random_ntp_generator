@@ -10,6 +10,8 @@ set -Eeo pipefail
 
 # Save script dir
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+# Output file (will be overwritten if not run on OpenWRT)
+OUTPUT_FILE="/tmp/random_ntp_servers.txt"
 
 # Check for get script and run it
 GET_SCR="$SCRIPT_DIR/get_random_servers.sh"
