@@ -17,9 +17,8 @@ OUTPUT_FILE="/tmp/random_ntp_servers.txt"
 if [ -n "$1" ]; then 
   MAX_SERVERS="$1"
 else
-  # Seed random with PID * timestamp
-  RANDOM=$(($$ * $(date +%s)))
-  MAX_SERVERS="$((RANDOM % 5 + 3))"
+  # Select random number with uuid data
+  MAX_SERVERS=$(tr -cd '3-9' < /proc/sys/kernel/random/uuid | head -c 1)
 fi
 
 # Check for server list, generate one if missing
@@ -28,7 +27,11 @@ if [ -s "$IP_FILE" ]; then
 $IP_FILE"
 elif [ -x "$GEN_SCR" ]; then
   echo "No existing ipv4 ntp server list found, generating one now:"
-  . "$GEN_SCR"
+  if [ -x "/bin/bash" ]; then
+    source "$GEN_SCR"
+  else
+    sh "$GEN_SCR"
+  fi
   [ -f "$IP_FILE" ] || (echo "Error, generating server file failed"; exit 1)
 else
   echo "Error, executable generate script missing: $GEN_SCR
@@ -47,11 +50,9 @@ TOTAL_NUM_SERVERS=$(wc -l < "$TEMP_FILE")
 if [[ "$MAX_SERVERS" -gt "$TOTAL_NUM_SERVERS" ]]; then 
   MAX_SERVERS="$TOTAL_NUM_SERVERS"
 fi
-# Seed random with PID * timestamp
-RANDOM=$(($$ * $(date +%s)))
 # Select a subset of servers
 for i in $(seq 1 "$MAX_SERVERS"); do 
-  LINE=$((RANDOM % TOTAL_NUM_SERVERS + 1))
+  LINE==$(tr -cd '1-9' < /proc/sys/kernel/random/uuid | head -c 1)
   head -n "$LINE" < "$TEMP_FILE" | tail -n 1 >> "$OUTPUT_FILE"
 done
 # Sort and remove duplicates

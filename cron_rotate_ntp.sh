@@ -14,7 +14,11 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 # Check for get script and run it
 GET_SCR="$SCRIPT_DIR/get_random_servers.sh"
 [ -x "$GET_SCR" ] || (echo "Error, get ntp script not found: $GET_SCR"; exit)
-. "$GET_SCR" 5
+if [ -x "/bin/bash" ]; then
+  source "$GET_SCR" 5
+else
+  sh "$GET_SCR" 5
+fi
 
 # Make sure output file isn't empty
 if [ ! -s "$OUTPUT_FILE" ]; then
