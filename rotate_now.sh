@@ -8,19 +8,13 @@ set -Eeo pipefail
 # Every time this script runs, it will update the ntp servers with new ones
 ################################################################################
 
-# Save script dir
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 # Output file (will be overwritten if not run on OpenWRT)
 OUTPUT_FILE="/tmp/random_ntp_servers.txt"
 
 # Check for get script and run it
-GET_SCR="$SCRIPT_DIR/get_random_servers.sh"
+GET_SCR="$(dirname "$0")/get_random_servers.sh"
 [ -x "$GET_SCR" ] || (echo "Error, get ntp script not found: $GET_SCR"; exit)
-if [ -x "/bin/bash" ]; then
-  source "$GET_SCR" 5
-else
-  sh "$GET_SCR" 5
-fi
+source "$GET_SCR" 5
 
 # Make sure output file isn't empty
 if [ ! -s "$OUTPUT_FILE" ]; then
@@ -59,9 +53,11 @@ elif command -v opkg &> /dev/null; then
     uci add_list system.ntp.server="$LINE"
   done < "$OUTPUT_FILE"
   uci commit system
-  rm "$OUTPUT_FILE"
 # Else, warn
 else
   echo "Error, timedatectl not found and no OpenWRT device detected, exiting."
   exit
 fi
+
+# Clean file from tmp
+rm "$OUTPUT_FILE"
